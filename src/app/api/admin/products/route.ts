@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
+import fs from 'fs/promises';
 
 export async function GET() {
   try {
@@ -27,39 +28,35 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const name = formData.get('name') as string;
     const description = formData.get('description') as string;
-    const price = parseFloat(formData.get('price') as string);
+    const price = Number(formData.get('price'));
     const image = formData.get('image') as File;
 
-    let imageUrl = null;
+    let imageUrl: string | undefined;
+
     if (image) {
       const bytes = await image.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-
-      // Create unique filename
+      const buffer = new Uint8Array(bytes);
+      
       const filename = `${Date.now()}-${image.name}`;
-      const uploadDir = path.join(process.cwd(), 'public/uploads');
+      const filepath = path.join(process.cwd(), 'public', 'uploads', filename);
       
-      // Ensure upload directory exists
-      try {
-        await mkdir(uploadDir, { recursive: true });
-      } catch (err) {
-        // Directory might already exist, ignore error
-      }
+      await fs.mkdir(path.dirname(filepath), { recursive: true });
+      await fs.writeFile(filepath, buffer);
       
-      // Save the file
-      await writeFile(
-        path.join(uploadDir, filename), 
-        new Uint8Array(buffer)
-      );
       imageUrl = `/uploads/${filename}`;
     }
 
     const product = await prisma.product.create({
       data: {
         name,
+        name_ru: name,
+        name_uz: name,
         description: description || null,
         price,
-        ...(imageUrl ? { imageUrl } : {}), // Only include imageUrl if it exists
+        imageUrl,
+        category: 'default',
+        category_ru: 'default',
+        category_uz: 'default'
       },
     });
 
