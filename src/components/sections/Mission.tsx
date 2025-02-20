@@ -29,26 +29,33 @@ export default function Mission({ title, text, image }: MissionProps) {
   if (!image) return null;
 
   return (
-    <section className="relative">
-      <div className="grid grid-cols-1 lg:grid-cols-2">
-        <div className="bg-white p-8 lg:p-16 flex items-center">
-          <div className="max-w-xl">
-            <h2 className="text-4xl font-bold mb-8">
+    <section className="relative py-24 lg:py-32">
+      <div className="container mx-auto px-4">
+        <div className="relative">
+          {/* Background Image */}
+          <div className="w-full h-[720px] relative">
+            <Image
+              src={image.startsWith('http') 
+                ? image 
+                : `/api/images${image.startsWith('/') ? image : `/${image}`}`}
+              alt={getLocalizedContent(title)}
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
+
+          {/* Content Card */}
+          <div className="absolute bottom-0 left-[7%] bg-white shadow-xl p-8 lg:p-12 max-w-xl h-[90%] overflow-y-auto">
+            <h2 className="text-4xl font-bold mb-6">
               {getLocalizedContent(title)}
             </h2>
-            <p className="text-gray-600 text-lg leading-relaxed whitespace-pre-line">
-              {getLocalizedContent(text)}
-            </p>
+            <div className="prose prose-lg">
+              <p className="text-gray-600 leading-relaxed whitespace-pre-line">
+                {getLocalizedContent(text)}
+              </p>
+            </div>
           </div>
-        </div>
-        <div className="relative h-[400px] lg:h-auto min-h-[500px]">
-          <Image
-            src={image}
-            alt={getLocalizedContent(title)}
-            fill
-            className="object-cover"
-            priority
-          />
         </div>
       </div>
     </section>

@@ -1,5 +1,5 @@
 import { Inter } from 'next/font/google';
-import Header from '@/components/layout/Header';
+import LandingHeader from '@/components/landing/LandingHeader';
 import '../globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -11,7 +11,7 @@ export default function PublicLayout({
 }) {
   return (
     <div className={inter.className}>
-      <Header />
+      <LandingHeader />
       {children}
     </div>
   );

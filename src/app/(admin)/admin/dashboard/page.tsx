@@ -3,8 +3,6 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import Sidebar from '@/components/admin/Sidebar';
-import Header from '@/components/admin/Header';
 
 interface DashboardStats {
   totalProducts: number;
@@ -63,9 +61,7 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="flex h-screen">
-        <Sidebar />
         <div className="flex-1 overflow-auto">
-          <Header />
           <main className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-white rounded-lg shadow p-6">

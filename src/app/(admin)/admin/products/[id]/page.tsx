@@ -4,8 +4,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { languages, Language } from '@/i18n/config';
-import Sidebar from '@/components/admin/Sidebar';
-import Header from '@/components/admin/Header';
 
 interface ProductFormData {
   name: string;
@@ -141,9 +139,7 @@ export default function ProductForm({ params }: { params: { id: string } }) {
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="flex h-screen">
-        <Sidebar />
         <div className="flex-1 overflow-auto">
-          <Header />
           <main className="p-6">
             <div className="max-w-4xl mx-auto">
               <div className="bg-white rounded-lg shadow p-6">

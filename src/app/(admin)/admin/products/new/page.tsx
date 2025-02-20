@@ -4,8 +4,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { languages, Language } from '@/i18n/config';
-import Sidebar from '@/components/admin/Sidebar';
-import Header from '@/components/admin/Header';
 import { toast } from 'react-hot-toast';
 
 interface ProductFormData {
@@ -73,7 +71,7 @@ export default function NewProductPage() {
         ...prev,
         image: file
       }));
-      
+
       // Create preview URL
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -101,7 +99,7 @@ export default function NewProductPage() {
       formDataToSend.append('category_ru', formData.category_ru);
       formDataToSend.append('category_uz', formData.category_uz);
       formDataToSend.append('price', formData.price);
-      
+
       if (formData.image) {
         formDataToSend.append('image', formData.image);
       }
@@ -130,15 +128,13 @@ export default function NewProductPage() {
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="flex h-screen">
-        <Sidebar />
         <div className="flex-1 overflow-auto">
-          <Header />
           <main className="p-6">
             <div className="max-w-4xl mx-auto">
               <div className="bg-white rounded-lg shadow p-6">
                 <div className="flex justify-between items-center mb-6">
                   <h1 className="text-2xl font-semibold text-gray-900">
-                    Add New Product
+                    Add New Product ({languages[currentLang]})
                   </h1>
                   <div className="flex space-x-2">
                     {Object.entries(languages).map(([code, name]) => (
@@ -146,11 +142,10 @@ export default function NewProductPage() {
                         key={code}
                         type="button"
                         onClick={() => setCurrentLang(code as Language)}
-                        className={`px-3 py-1 rounded ${
-                          currentLang === code
+                        className={`px-3 py-1 rounded ${currentLang === code
                             ? 'bg-primary text-white'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
+                          }`}
                       >
                         {name}
                       </button>
@@ -223,8 +218,8 @@ export default function NewProductPage() {
                   </div>
 
                   <div>
-                    <label 
-                      htmlFor="image" 
+                    <label
+                      htmlFor="image"
                       className="block text-sm font-medium text-gray-700 mb-1"
                     >
                       Product Image

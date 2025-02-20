@@ -46,33 +46,61 @@ model Activity {
 }
 
 model HeroSection {
-  id          Int      @id @default(autoincrement())
-  title       String
-  titleRu     String
-  titleUz     String
-  subtitle    String
-  subtitleRu  String
-  subtitleUz  String
-  ctaText     String
-  ctaTextRu   String
-  ctaTextUz   String
+  id              Int      @id @default(autoincrement())
+  title           String
+  titleRu         String
+  titleUz         String
+  subtitle        String
+  subtitleRu      String
+  subtitleUz      String
+  ctaText         String
+  ctaTextRu       String
+  ctaTextUz       String
   backgroundVideo String?
-  missionTitle    String
-  missionTitleRu  String
-  missionTitleUz  String
-  missionText     String
-  missionTextRu   String
-  missionTextUz   String
-  missionImage    String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model MissionSection {
+  id             Int      @id @default(autoincrement())
+  title          String
+  titleRu        String
+  titleUz        String
+  text           String
+  textRu         String
+  textUz         String
+  image          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model SiteSettings {
+  id          Int      @id @default(autoincrement())
+  logo        String?
+  companyName String
+  address     String   @default("")
+  address_ru  String   @default("")
+  address_uz  String   @default("")
+  instagram   String?
+  telegram    String?
+  youtube     String?
+  facebook    String?
+  phones      Phone[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
-model SiteSettings {
-  id        Int      @id @default(autoincrement())
-  logo      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Phone {
+  id            Int          @id @default(autoincrement())
+  number        String
+  department    String
+  department_ru String
+  department_uz String
+  description   String?
+  description_ru String?
+  description_uz String?
+  siteSettings  SiteSettings @relation(fields: [settingsId], references: [id])
+  settingsId    Int
 }
 
 model Stat {
@@ -81,4 +109,17 @@ model Stat {
   label   String
   labelRu String
   labelUz String
+}
+
+model News {
+  id          Int      @id @default(autoincrement())
+  title       String
+  title_ru    String
+  title_uz    String
+  content     String
+  content_ru  String
+  content_uz  String
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

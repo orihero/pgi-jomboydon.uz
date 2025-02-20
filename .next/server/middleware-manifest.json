@@ -13,8 +13,8 @@
       "page": "/",
       "matchers": [
         {
-          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?(?:\\/((?!api|_next|admin|videos|images|[\\w-]+\\.\\w+).*))(.json)?[\\/#\\?]?$",
-          "originalSource": "/((?!api|_next|admin|videos|images|[\\w-]+\\.\\w+).*)"
+          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?(?:\\/((?!api|_next\\/static|_next\\/image|favicon.ico|uploads|videos|admin).*))(.json)?[\\/#\\?]?$",
+          "originalSource": "/((?!api|_next/static|_next/image|favicon.ico|uploads|videos|admin).*)"
         }
       ],
       "wasm": [],

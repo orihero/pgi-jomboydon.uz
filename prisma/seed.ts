@@ -17,7 +17,7 @@ async function main() {
     },
   });
 
-  // Create or update the single hero section
+  // Create or update the hero section
   const heroSection = await prisma.heroSection.upsert({
     where: { id: 1 },
     update: {},
@@ -31,20 +31,29 @@ async function main() {
       ctaText: 'Learn More',
       ctaTextRu: 'Узнать больше',
       ctaTextUz: "Ko'proq ma'lumot",
-      missionTitle: 'Our Mission',
-      missionTitleRu: 'Наша миссия',
-      missionTitleUz: 'Bizning vazifamiz',
-      missionText: 'We strive to provide quality products',
-      missionTextRu: 'Мы стремимся предоставлять качественные продукты',
-      missionTextUz: 'Biz sifatli mahsulotlar taqdim etishga intilamiz'
+    },
+  });
+
+  // Create or update the mission section
+  const missionSection = await prisma.missionSection.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      title: 'Our Mission',
+      titleRu: 'Наша миссия',
+      titleUz: 'Bizning vazifamiz',
+      text: 'We strive to provide quality products',
+      textRu: 'Мы стремимся предоставлять качественные продукты',
+      textUz: 'Biz sifatli mahsulotlar taqdim etishga intilamiz',
     },
   });
 
   // Create or update site settings
-  const siteSettings = await prisma.siteSettings.upsert({
+  await prisma.siteSettings.upsert({
     where: { id: 1 },
     update: {},
     create: {
+      companyName: 'Jomboy don',
       logo: null,
     },
   });
@@ -88,7 +97,7 @@ async function main() {
     });
   }
 
-  console.log({ admin, heroSection, siteSettings });
+  console.log({ admin, heroSection, missionSection });
 }
 
 main()

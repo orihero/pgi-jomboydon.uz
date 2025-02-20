@@ -1,17 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { languages, Language } from '@/i18n/config';
 import { toast } from 'react-hot-toast';
-import Sidebar from '@/components/admin/Sidebar';
-import Header from '@/components/admin/Header';
 
 interface LandingFormData {
   // Hero section fields
-  title: string;
-  titleRu: string;
-  titleUz: string;
+  heroTitle: string;
+  heroTitleRu: string;
+  heroTitleUz: string;
   subtitle: string;
   subtitleRu: string;
   subtitleUz: string;
@@ -29,7 +26,7 @@ interface LandingFormData {
   missionTextUz: string;
   missionImage: File | null;
   currentMissionImage: string | null;
-  // Add Stats fields
+  // Stats fields
   stats: Array<{
     id: string;
     value: string;
@@ -44,9 +41,9 @@ export default function LandingSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState<LandingFormData>({
     // Hero section fields
-    title: '',
-    titleRu: '',
-    titleUz: '',
+    heroTitle: '',
+    heroTitleRu: '',
+    heroTitleUz: '',
     subtitle: '',
     subtitleRu: '',
     subtitleUz: '',
@@ -64,7 +61,7 @@ export default function LandingSettingsPage() {
     missionTextUz: '',
     missionImage: null,
     currentMissionImage: null,
-    // Add Stats fields
+    // Stats fields
     stats: [],
   });
 
@@ -74,30 +71,48 @@ export default function LandingSettingsPage() {
 
   const fetchSettings = async () => {
     try {
-      // Fetch hero and mission settings
-      const settingsResponse = await fetch('/api/admin/landing-settings');
-      const settingsData = await settingsResponse.json();
+      // Fetch hero settings
+      const heroResponse = await fetch('/api/admin/hero-settings');
+      const heroData = await heroResponse.json();
+
+      // Fetch mission settings
+      const missionResponse = await fetch('/api/admin/mission-settings');
+      const missionData = await missionResponse.json();
 
       // Fetch stats
       const statsResponse = await fetch('/api/stats');
       const statsData = await statsResponse.json();
 
-      // Map stats to the format we need
-      const formattedStats = statsData.map((stat: any) => ({
-        id: stat.id,
-        value: stat.value,
-        label: stat.label,
-        labelRu: stat.labelRu,
-        labelUz: stat.labelUz,
-      }));
-
       setFormData({
-        ...settingsData,
+        // Hero section
+        heroTitle: heroData.title,
+        heroTitleRu: heroData.titleRu,
+        heroTitleUz: heroData.titleUz,
+        subtitle: heroData.subtitle,
+        subtitleRu: heroData.subtitleRu,
+        subtitleUz: heroData.subtitleUz,
+        ctaText: heroData.ctaText,
+        ctaTextRu: heroData.ctaTextRu,
+        ctaTextUz: heroData.ctaTextUz,
         backgroundVideo: null,
+        currentVideo: heroData.backgroundVideo,
+        // Mission section
+        missionTitle: missionData.title,
+        missionTitleRu: missionData.titleRu,
+        missionTitleUz: missionData.titleUz,
+        missionText: missionData.text,
+        missionTextRu: missionData.textRu,
+        missionTextUz: missionData.textUz,
         missionImage: null,
-        currentVideo: settingsData.backgroundVideo,
-        currentMissionImage: settingsData.missionImage,
-        stats: formattedStats, // Add stats to form data
+        currentMissionImage: missionData.image,
+        // Stats
+        stats: statsData.map((stat: any) => ({
+          id: stat.id,
+          value: stat.value,
+          label: stat.label,
+          labelRu: stat.labelRu,
+          labelUz: stat.labelUz,
+        })),
       });
     } catch (error) {
       toast.error('Failed to load settings');
@@ -157,13 +172,14 @@ export default function LandingSettingsPage() {
     try {
       const formDataToSend = new FormData();
       
-      // Append hero section fields
-      ['title', 'titleRu', 'titleUz', 'subtitle', 'subtitleRu', 'subtitleUz', 'ctaText', 'ctaTextRu', 'ctaTextUz'].forEach(key => {
+      // Append text fields
+      ['heroTitle', 'heroTitleRu', 'heroTitleUz', 'subtitle', 'subtitleRu', 'subtitleUz', 'ctaText', 'ctaTextRu', 'ctaTextUz'].forEach(key => {
         formDataToSend.append(key, formData[key as keyof LandingFormData] as string);
       });
 
-      if (formData.backgroundVideo) {
-        formDataToSend.append('backgroundVideo', formData.backgroundVideo);
+      // Handle video file properly
+      if (formData.backgroundVideo instanceof File) {
+        formDataToSend.append('file', formData.backgroundVideo);
       }
       if (formData.currentVideo) {
         formDataToSend.append('currentVideo', formData.currentVideo);
@@ -174,10 +190,14 @@ export default function LandingSettingsPage() {
         body: formDataToSend,
       });
 
-      if (!response.ok) throw new Error('Failed to update hero section');
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.details || 'Failed to update hero section');
+      }
+      
       toast.success('Hero section updated successfully');
     } catch (error) {
-      toast.error('Failed to update hero section');
+      toast.error(error instanceof Error ? error.message : 'Failed to update hero section');
     } finally {
       setLoading(false);
     }
@@ -220,17 +240,15 @@ export default function LandingSettingsPage() {
       if (formData.missionImage) {
         formDataToSend.append('missionImage', formData.missionImage);
       }
-      if (formData.currentMissionImage) {
-        formDataToSend.append('currentMissionImage', formData.currentMissionImage);
-      }
 
-      const response = await fetch('/api/admin/landing-settings', {
+      const response = await fetch('/api/admin/mission-settings', {
         method: 'PUT',
         body: formDataToSend,
       });
 
       if (!response.ok) throw new Error('Failed to update mission section');
       toast.success('Mission section updated successfully');
+      fetchSettings(); // Refresh data
     } catch (error) {
       toast.error('Failed to update mission section');
     } finally {
@@ -257,9 +275,7 @@ export default function LandingSettingsPage() {
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="flex h-screen">
-        <Sidebar />
         <div className="flex-1 overflow-auto">
-          <Header />
           <main className="p-6">
             <div className="max-w-4xl mx-auto space-y-6">
               {/* Hero Section */}
@@ -293,8 +309,8 @@ export default function LandingSettingsPage() {
                     </label>
                     <input
                       type="text"
-                      name={getFieldName('title')}
-                      value={getFieldValue('title')}
+                      name={getFieldName('heroTitle')}
+                      value={getFieldValue('heroTitle')}
                       onChange={handleChange}
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
                     />
@@ -470,7 +486,7 @@ export default function LandingSettingsPage() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      Mission Title ({languages[currentLang]})
+                      Title ({languages[currentLang]})
                     </label>
                     <input
                       type="text"
@@ -483,7 +499,7 @@ export default function LandingSettingsPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      Mission Text ({languages[currentLang]})
+                      Text ({languages[currentLang]})
                     </label>
                     <textarea
                       name={getFieldName('missionText')}
@@ -496,7 +512,7 @@ export default function LandingSettingsPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      Mission Background Image
+                      Background Image
                     </label>
                     <div className="mt-1 flex items-center">
                       <input
@@ -508,9 +524,12 @@ export default function LandingSettingsPage() {
                     </div>
                     {formData.currentMissionImage && (
                       <div className="mt-2">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={formData.currentMissionImage}
-                          alt="Current mission background"
+                          src={formData.currentMissionImage.startsWith('http') 
+                            ? formData.currentMissionImage 
+                            : `/api/images${formData.currentMissionImage.startsWith('/') ? formData.currentMissionImage : `/${formData.currentMissionImage}`}`}
+                          alt="Current background"
                           className="h-32 w-auto object-cover rounded-md"
                         />
                       </div>

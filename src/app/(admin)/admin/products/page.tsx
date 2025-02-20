@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 import { languages, Language } from '@/i18n/config';
 import Sidebar from '@/components/admin/Sidebar';
 import Header from '@/components/admin/Header';
+import Image from 'next/image';
 
 interface Product {
   id: string;
@@ -76,9 +77,7 @@ export default function ProductsPage() {
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="flex h-screen">
-        <Sidebar />
         <div className="flex-1 overflow-auto">
-          <Header />
           <main className="p-6">
             <div className="max-w-7xl mx-auto">
               <div className="flex justify-between items-center mb-6">
@@ -95,19 +94,19 @@ export default function ProductsPage() {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
                         Image
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-64">
                         Name
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
                         Category
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                         Price
                       </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                         Actions
                       </th>
                     </tr>
@@ -117,22 +116,29 @@ export default function ProductsPage() {
                       <tr key={product.id}>
                         <td className="px-6 py-4 whitespace-nowrap">
                           {product.imageUrl && (
+                            // eslint-disable-next-line @next/next/no-img-element
                             <img
-                              src={product.imageUrl}
+                              src={product.imageUrl.startsWith('http') 
+                                ? product.imageUrl 
+                                : `/api/images${product.imageUrl.startsWith('/') ? product.imageUrl : `/${product.imageUrl}`}`}
                               alt={product.name}
                               className="h-10 w-10 object-cover rounded"
                             />
                           )}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {currentLang === 'ru' ? product.nameRu : 
-                           currentLang === 'uz' ? product.nameUz : 
-                           product.name}
+                        <td className="px-6 py-4">
+                          <div className="max-w-xs truncate">
+                            {currentLang === 'ru' ? product.nameRu :
+                              currentLang === 'uz' ? product.nameUz :
+                                product.name}
+                          </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {currentLang === 'ru' ? product.categoryRu :
-                           currentLang === 'uz' ? product.categoryUz :
-                           product.category}
+                        <td className="px-6 py-4">
+                          <div className="max-w-xs truncate">
+                            {currentLang === 'ru' ? product.categoryRu :
+                              currentLang === 'uz' ? product.categoryUz :
+                                product.category}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           ${product.price}

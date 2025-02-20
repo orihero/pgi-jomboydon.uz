@@ -3,12 +3,14 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: '**',
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3000',
+        pathname: '/images/**',
       },
     ],
     domains: ['localhost'],
-  },
+  }
 }
 
 module.exports = nextConfig 

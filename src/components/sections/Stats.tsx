@@ -52,19 +52,21 @@ export default function Stats({ data }: StatsProps) {
   if (loading) return null;
 
   return (
-    <section className="py-16 bg-white">
+    <section className="relative -mt-32 z-20">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8">
-          {stats.map((stat) => (
-            <div key={stat.id} className="text-center">
-              <div className="text-3xl font-bold text-primary mb-2">
-                {stat.value}
+        <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-xl p-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8">
+            {stats.map((stat) => (
+              <div key={stat.id} className="text-center">
+                <div className="text-3xl font-bold text-[#8B1D1D] mb-2">
+                  {stat.value}
+                </div>
+                <div className="text-gray-600">
+                  {lang === 'ru' ? stat.labelRu : lang === 'uz' ? stat.labelUz : stat.label}
+                </div>
               </div>
-              <div className="text-gray-600">
-                {lang === 'ru' ? stat.labelRu : lang === 'uz' ? stat.labelUz : stat.label}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </section>
