@@ -8,7 +8,7 @@ import { signOut } from 'next-auth/react';
 const menuItems = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: HomeIcon },
   { name: 'Products', href: '/admin/products', icon: CubeIcon },
-  { name: 'Hero Settings', href: '/admin/hero-settings', icon: VideoCameraIcon },
+  { name: 'Landing Page', href: '/admin/landing-settings', icon: VideoCameraIcon },
   { name: 'Settings', href: '/admin/settings', icon: CogIcon },
 ];
 

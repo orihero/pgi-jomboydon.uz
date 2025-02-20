@@ -2,25 +2,31 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { toast } from 'react-hot-toast';
+import { languages, Language } from '@/i18n/config';
 import Sidebar from '@/components/admin/Sidebar';
 import Header from '@/components/admin/Header';
 
 interface Product {
-  id: number;
+  id: string;
   name: string;
+  nameRu: string;
+  nameUz: string;
   description: string | null;
+  descriptionRu: string | null;
+  descriptionUz: string | null;
   price: number;
   imageUrl: string | null;
-  createdAt: string;
+  category: string;
+  categoryRu: string;
+  categoryUz: string;
 }
 
 export default function ProductsPage() {
+  const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
+  const [currentLang, setCurrentLang] = useState<Language>('en');
 
   useEffect(() => {
     fetchProducts();
@@ -28,58 +34,44 @@ export default function ProductsPage() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('/api/admin/products');
+      const response = await fetch('/api/products');
       const data = await response.json();
-      
-      if (data.error) {
-        throw new Error(data.error);
-      }
-      
-      // Ensure data is an array
-      setProducts(Array.isArray(data) ? data : []);
+      setProducts(data);
     } catch (error) {
-      console.error('Error fetching products:', error);
-      setError(error instanceof Error ? error.message : 'Failed to fetch products');
+      toast.error('Failed to load products');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (confirm('Are you sure you want to delete this product?')) {
-      try {
-        const response = await fetch(`/api/admin/products/${id}`, {
-          method: 'DELETE',
-        });
-        const data = await response.json();
-        
-        if (data.error) {
-          throw new Error(data.error);
-        }
-        
-        fetchProducts(); // Refresh the list
-      } catch (error) {
-        console.error('Error deleting product:', error);
-        alert(error instanceof Error ? error.message : 'Failed to delete product');
+  const handleAddProduct = () => {
+    router.push('/admin/products/new');
+  };
+
+  const handleEditProduct = (id: string) => {
+    router.push(`/admin/products/${id}`);
+  };
+
+  const handleDeleteProduct = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this product?')) return;
+
+    try {
+      const response = await fetch(`/api/products/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setProducts(products.filter(product => product.id !== id));
+        toast.success('Product deleted successfully');
+      } else {
+        throw new Error('Failed to delete product');
       }
+    } catch (error) {
+      toast.error('Failed to delete product');
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-gray-500">Loading...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-red-500">{error}</div>
-      </div>
-    );
-  }
+  if (loading) return <div>Loading...</div>;
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -88,108 +80,82 @@ export default function ProductsPage() {
         <div className="flex-1 overflow-auto">
           <Header />
           <main className="p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h1 className="text-2xl font-semibold text-gray-900">Products</h1>
-              <button
-                onClick={() => router.push('/admin/products/new')}
-                className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg flex items-center"
-              >
-                <PlusIcon className="w-5 h-5 mr-2" />
-                Add Product
-              </button>
-            </div>
+            <div className="max-w-7xl mx-auto">
+              <div className="flex justify-between items-center mb-6">
+                <h1 className="text-2xl font-semibold">Products</h1>
+                <button
+                  onClick={handleAddProduct}
+                  className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600"
+                >
+                  Add Product
+                </button>
+              </div>
 
-            <div className="bg-white rounded-lg shadow">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Image
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Description
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Price
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Created At
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {products.length === 0 ? (
+              <div className="bg-white rounded-lg shadow overflow-hidden">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
                     <tr>
-                      <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
-                        No products found
-                      </td>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Image
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Name
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Category
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Price
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
                     </tr>
-                  ) : (
-                    products.map((product) => (
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {products.map((product) => (
                       <tr key={product.id}>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="h-16 w-16 relative rounded-lg overflow-hidden bg-gray-100">
-                            {product.imageUrl ? (
-                              <Image
-                                src={product.imageUrl}
-                                alt={product.name}
-                                width={64}
-                                height={64}
-                                className="object-cover w-full h-full"
-                                unoptimized
-                              />
-                            ) : (
-                              <div className="flex items-center justify-center h-full text-gray-400">
-                                No image
-                              </div>
-                            )}
-                          </div>
+                          {product.imageUrl && (
+                            <img
+                              src={product.imageUrl}
+                              alt={product.name}
+                              className="h-10 w-10 object-cover rounded"
+                            />
+                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">
-                            {product.name}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="text-sm text-gray-500">
-                            {product.description || '-'}
-                          </div>
+                          {currentLang === 'ru' ? product.nameRu : 
+                           currentLang === 'uz' ? product.nameUz : 
+                           product.name}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            ${product.price.toFixed(2)}
-                          </div>
+                          {currentLang === 'ru' ? product.categoryRu :
+                           currentLang === 'uz' ? product.categoryUz :
+                           product.category}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-500">
-                            {new Date(product.createdAt).toLocaleDateString()}
-                          </div>
+                          ${product.price}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <button
-                            onClick={() => router.push(`/admin/products/${product.id}/edit`)}
-                            className="text-primary hover:text-primary-dark mr-4"
+                            onClick={() => handleEditProduct(product.id)}
+                            className="text-indigo-600 hover:text-indigo-900 mr-4"
                           >
-                            <PencilIcon className="w-5 h-5" />
+                            Edit
                           </button>
                           <button
-                            onClick={() => handleDelete(product.id)}
+                            onClick={() => handleDeleteProduct(product.id)}
                             className="text-red-600 hover:text-red-900"
                           >
-                            <TrashIcon className="w-5 h-5" />
+                            Delete
                           </button>
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </main>
         </div>

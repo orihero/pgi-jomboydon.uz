@@ -1,4 +1,9 @@
 {
   "/not-found": "app/not-found.js",
-  "/(public)/[lang]/page": "app/(public)/[lang]/page.js"
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/api/admin/landing-settings/route": "app/api/admin/landing-settings/route.js",
+  "/api/products/route": "app/api/products/route.js",
+  "/(public)/[lang]/page": "app/(public)/[lang]/page.js",
+  "/(admin)/admin/landing-settings/page": "app/(admin)/admin/landing-settings/page.js",
+  "/(admin)/admin/dashboard/page": "app/(admin)/admin/dashboard/page.js"
 }

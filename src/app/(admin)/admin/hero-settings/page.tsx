@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { languages, Language } from '@/i18n/config';
 import Sidebar from '@/components/admin/Sidebar';
 import Header from '@/components/admin/Header';
+import { toast } from 'react-hot-toast';
 
 interface HeroFormData {
   title: string;
@@ -18,6 +19,14 @@ interface HeroFormData {
   ctaTextUz: string;
   backgroundVideo: File | null;
   currentVideo: string | null;
+}
+
+interface Stat {
+  id: string;
+  value: string;
+  label: string;
+  labelRu: string;
+  labelUz: string;
 }
 
 export default function HeroSettingsPage() {
@@ -39,9 +48,11 @@ export default function HeroSettingsPage() {
     backgroundVideo: null,
     currentVideo: null,
   });
+  const [stats, setStats] = useState<Stat[]>([]);
 
   useEffect(() => {
     fetchHeroSettings();
+    fetchStats();
   }, []);
 
   const fetchHeroSettings = async () => {
@@ -58,6 +69,17 @@ export default function HeroSettingsPage() {
       setError('Failed to fetch hero settings');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      const response = await fetch('/api/stats');
+      const data = await response.json();
+      setStats(data);
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+      toast.error('Failed to load stats');
     }
   };
 
@@ -124,11 +146,40 @@ export default function HeroSettingsPage() {
         throw new Error('Failed to update hero settings');
       }
 
+      toast.success('Hero settings updated successfully');
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      toast.error(errorMessage);
+      setError(errorMessage);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleStatChange = (index: number, field: keyof Stat, value: string) => {
+    const newStats = [...stats];
+    newStats[index] = { ...newStats[index], [field]: value };
+    setStats(newStats);
+  };
+
+  const handleStatsSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/api/stats', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stats }),
+      });
+      
+      if (response.ok) {
+        toast.success('Stats updated successfully');
+      } else {
+        throw new Error('Failed to update stats');
+      }
+    } catch (error) {
+      console.error('Error updating stats:', error);
+      toast.error('Failed to update stats');
     }
   };
 
@@ -252,6 +303,63 @@ export default function HeroSettingsPage() {
                       {saving ? 'Saving...' : 'Save Changes'}
                     </button>
                   </div>
+                </form>
+              </div>
+
+              {/* Stats Settings */}
+              <div className="bg-white rounded-lg shadow p-6 mt-6">
+                <h2 className="text-2xl font-bold mb-6">Stats Settings</h2>
+                <form onSubmit={handleStatsSubmit}>
+                  <div className="space-y-6">
+                    {stats.map((stat, index) => (
+                      <div key={stat.id} className="p-4 border rounded-lg">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block mb-2 font-medium">Value</label>
+                            <input
+                              type="text"
+                              value={stat.value}
+                              onChange={(e) => handleStatChange(index, 'value', e.target.value)}
+                              className="w-full p-2 border rounded"
+                            />
+                          </div>
+                          <div>
+                            <label className="block mb-2 font-medium">Label (English)</label>
+                            <input
+                              type="text"
+                              value={stat.label}
+                              onChange={(e) => handleStatChange(index, 'label', e.target.value)}
+                              className="w-full p-2 border rounded"
+                            />
+                          </div>
+                          <div>
+                            <label className="block mb-2 font-medium">Label (Russian)</label>
+                            <input
+                              type="text"
+                              value={stat.labelRu}
+                              onChange={(e) => handleStatChange(index, 'labelRu', e.target.value)}
+                              className="w-full p-2 border rounded"
+                            />
+                          </div>
+                          <div>
+                            <label className="block mb-2 font-medium">Label (Uzbek)</label>
+                            <input
+                              type="text"
+                              value={stat.labelUz}
+                              onChange={(e) => handleStatChange(index, 'labelUz', e.target.value)}
+                              className="w-full p-2 border rounded"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    type="submit"
+                    className="mt-6 bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600"
+                  >
+                    Save Stats
+                  </button>
                 </form>
               </div>
             </div>

@@ -3,27 +3,60 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { languages, Language } from '@/i18n/config';
 import Sidebar from '@/components/admin/Sidebar';
 import Header from '@/components/admin/Header';
+import { toast } from 'react-hot-toast';
 
 interface ProductFormData {
   name: string;
+  name_ru: string;
+  name_uz: string;
   description: string;
+  description_ru: string;
+  description_uz: string;
   price: string;
+  category: string;
+  category_ru: string;
+  category_uz: string;
   image: File | null;
 }
 
 export default function NewProductPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [currentLang, setCurrentLang] = useState<Language>('en');
   const [error, setError] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [formData, setFormData] = useState<ProductFormData>({
     name: '',
+    name_ru: '',
+    name_uz: '',
     description: '',
+    description_ru: '',
+    description_uz: '',
     price: '',
+    category: '',
+    category_ru: '',
+    category_uz: '',
     image: null,
   });
+
+  const getFieldName = (baseName: string): string => {
+    switch (currentLang) {
+      case 'ru':
+        return `${baseName}_ru`;
+      case 'uz':
+        return `${baseName}_uz`;
+      default:
+        return baseName;
+    }
+  };
+
+  const getFieldValue = (baseName: string): string => {
+    const fieldName = getFieldName(baseName);
+    return formData[fieldName as keyof ProductFormData] as string || '';
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -57,28 +90,38 @@ export default function NewProductPage() {
 
     try {
       const formDataToSend = new FormData();
+      // Send all fields including translations
       formDataToSend.append('name', formData.name);
-      formDataToSend.append('description', formData.description);
+      formDataToSend.append('name_ru', formData.name_ru);
+      formDataToSend.append('name_uz', formData.name_uz);
+      formDataToSend.append('description', formData.description || '');
+      formDataToSend.append('description_ru', formData.description_ru || '');
+      formDataToSend.append('description_uz', formData.description_uz || '');
+      formDataToSend.append('category', formData.category);
+      formDataToSend.append('category_ru', formData.category_ru);
+      formDataToSend.append('category_uz', formData.category_uz);
       formDataToSend.append('price', formData.price);
+      
       if (formData.image) {
         formDataToSend.append('image', formData.image);
       }
 
-      const response = await fetch('/api/admin/products', {
+      const response = await fetch('/api/products', { // Updated API endpoint
         method: 'POST',
         body: formDataToSend,
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
+        const data = await response.json();
         throw new Error(data.error || 'Failed to create product');
       }
 
+      toast.success('Product created successfully');
       router.push('/admin/products');
-      router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      const message = err instanceof Error ? err.message : 'Failed to create product';
+      toast.error(message);
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -91,11 +134,29 @@ export default function NewProductPage() {
         <div className="flex-1 overflow-auto">
           <Header />
           <main className="p-6">
-            <div className="max-w-2xl mx-auto">
+            <div className="max-w-4xl mx-auto">
               <div className="bg-white rounded-lg shadow p-6">
-                <h1 className="text-2xl font-semibold text-gray-900 mb-6">
-                  Add New Product
-                </h1>
+                <div className="flex justify-between items-center mb-6">
+                  <h1 className="text-2xl font-semibold text-gray-900">
+                    Add New Product
+                  </h1>
+                  <div className="flex space-x-2">
+                    {Object.entries(languages).map(([code, name]) => (
+                      <button
+                        key={code}
+                        type="button"
+                        onClick={() => setCurrentLang(code as Language)}
+                        className={`px-3 py-1 rounded ${
+                          currentLang === code
+                            ? 'bg-primary text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
                 {error && (
                   <div className="mb-4 p-4 bg-red-50 text-red-500 rounded-md">
@@ -105,60 +166,59 @@ export default function NewProductPage() {
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div>
-                    <label 
-                      htmlFor="name" 
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                      Product Name
+                    <label className="block text-sm font-medium text-gray-700">
+                      Name ({languages[currentLang]})
                     </label>
                     <input
                       type="text"
-                      id="name"
-                      name="name"
-                      required
-                      value={formData.name}
+                      name={getFieldName('name')}
+                      value={getFieldValue('name')}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
-                      placeholder="Enter product name"
+                      required
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
                     />
                   </div>
 
                   <div>
-                    <label 
-                      htmlFor="description" 
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                      Description
+                    <label className="block text-sm font-medium text-gray-700">
+                      Description ({languages[currentLang]})
                     </label>
                     <textarea
-                      id="description"
-                      name="description"
-                      rows={4}
-                      value={formData.description}
+                      name={getFieldName('description')}
+                      value={getFieldValue('description')}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
-                      placeholder="Enter product description"
+                      rows={4}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
                     />
                   </div>
 
                   <div>
-                    <label 
-                      htmlFor="price" 
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
+                    <label className="block text-sm font-medium text-gray-700">
+                      Category ({languages[currentLang]})
+                    </label>
+                    <input
+                      type="text"
+                      name={getFieldName('category')}
+                      value={getFieldValue('category')}
+                      onChange={handleChange}
+                      required
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
                       Price
                     </label>
                     <input
                       type="number"
-                      id="price"
                       name="price"
+                      value={formData.price}
+                      onChange={handleChange}
                       required
                       step="0.01"
                       min="0"
-                      value={formData.price}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
-                      placeholder="Enter price"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
                     />
                   </div>
 
@@ -216,14 +276,14 @@ export default function NewProductPage() {
                     <button
                       type="button"
                       onClick={() => router.back()}
-                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={loading}
-                      className="px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                      className="px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-primary-dark"
                     >
                       {loading ? 'Creating...' : 'Create Product'}
                     </button>

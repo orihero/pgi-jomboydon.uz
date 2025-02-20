@@ -1,23 +1,33 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 
-const prisma = new PrismaClient();
-
-export async function GET() {
+export async function PUT(request: Request) {
   try {
-    const [products, users] = await Promise.all([
-      prisma.product.count(),
-      prisma.admin.count(),
-    ]);
+    const data = await request.json();
+    
+    // Delete all existing stats
+    await prisma.stat.deleteMany();
+    
+    // Create new stats
+    const stats = await Promise.all(
+      data.map((stat: any) => 
+        prisma.stat.create({
+          data: {
+            id: stat.id,
+            value: stat.value,
+            label: stat.label,
+            labelRu: stat.labelRu,
+            labelUz: stat.labelUz,
+          }
+        })
+      )
+    );
 
-    return NextResponse.json({
-      totalProducts: products,
-      totalOrders: 0, // Add order model and count when implemented
-      totalUsers: users,
-    });
+    return NextResponse.json(stats);
   } catch (error) {
+    console.error('Error updating stats:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch stats' },
+      { error: 'Failed to update stats' },
       { status: 500 }
     );
   }

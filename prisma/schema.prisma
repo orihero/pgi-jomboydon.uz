@@ -23,9 +23,16 @@ model Admin {
 model Product {
   id          Int      @id @default(autoincrement())
   name        String
+  name_ru     String
+  name_uz     String
   description String?
+  description_ru String?
+  description_uz String?
   price       Float
   imageUrl    String?
+  category    String
+  category_ru String
+  category_uz String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -50,6 +57,13 @@ model HeroSection {
   ctaTextRu   String
   ctaTextUz   String
   backgroundVideo String?
+  missionTitle    String
+  missionTitleRu  String
+  missionTitleUz  String
+  missionText     String
+  missionTextRu   String
+  missionTextUz   String
+  missionImage    String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
